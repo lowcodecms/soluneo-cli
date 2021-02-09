@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "bin": {
-    "@lowcodecms/cli": "bin/sol",
+    "cli": "bin/sol",
     "sol": "bin/sol"
   },
   "publishConfig": {
@@ -14,13 +14,38 @@
     "arg": "^5.0.0",
     "base-64": "^1.0.0",
     "bestzip": "^2.1.7",
+    "body-parser": "^1.19.0",
     "chalk": "^4.1.0",
+    "cors": "^2.8.5",
     "esm": "^3.2.25",
+    "execa": "^5.0.0",
+    "express": "^4.17.1",
+    "extract-zip": "^2.0.1",
     "form-data": "^3.0.0",
     "inquirer": "^7.3.3",
     "listr": "^0.14.3",
     "node-fetch": "^2.6.1",
     "node-watch": "^0.7.1",
-    "ora": "^5.2.0"
-  }
+    "open": "^7.4.0",
+    "ora": "^5.2.0",
+    "rxjs": "^6.6.3"
+  },
+  "description": "soluneo cli",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lowcodecms/soluneo-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "lowcodecms"
+  ],
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/lowcodecms/soluneo-cli/issues"
+  },
+  "homepage": "https://github.com/lowcodecms/soluneo-cli#readme"
 }
