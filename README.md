@@ -1,9 +1,10 @@
 # soluneo-cli
 
 soluneo cli
+until this repository is published on npm, clone it and do:
 
-yarn install
-yarn link
+- yarn install
+- yarn link
 
 # local development server
 
