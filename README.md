@@ -6,6 +6,9 @@ until this repository is published on npm, clone it and do:
 - yarn install
 - yarn link
 
+note: you need to register at https://my.lowcodecms.com in order to be able to login and download the development build.
+you can install the software at the moment without developer claim. but please still start the process to be ready when it will be more controlled.
+
 # local development server
 
 right now only one is working at one machine until $rand function is implemented.
