@@ -7,7 +7,7 @@ yarn link
 
 # local development server
 
-right now only one is working at one machine until $rand function is implemented.
+You can have multiple installation in own folder. 
 
 - ```sol login```
   - somewhere for global login
@@ -18,9 +18,14 @@ right now only one is working at one machine until $rand function is implemented
 - ```sol stop```
   - in installation directory
 
+- ```sol logs```
+  - in installation directory. display last 100 logs
+
 right now it is starting on port 80 - will be configurable in future.
 
+it might take a while the first time because the cli is downloading all server images. to see progress you can open another terminal window and check status with sol logs.
 
+it is save to perform ```sol install``` in existing installation directories. instance data will not be overwritten.
 
 # usage
 

@@ -30,6 +30,8 @@ import express from "express";
 import open from "open";
 import cors from "cors";
 import bodyParser from "body-parser";
+import { nanoid } from 'nanoid';
+
 const extract = require('extract-zip')
 
 const { Observable } = require("rxjs");
@@ -185,10 +187,24 @@ async function download() {
   });
 }
 
-
+async function showLogs() {  
+  try {
+    await execa.command('docker-compose -f ./lowcodecms/development-main/docker-compose.yml logs').stdout.pipe(process.stdout);  
+  }catch(error) {
+    throw error;
+  }
+}
 
 export function cli(args) {
-// lowcodecms/development-main
+
+if(args.indexOf("logs") !== -1) {
+  showLogs().catch(e=>{
+    console.log(e)
+  })
+  return;
+}
+
+
 if (args.indexOf("stop") !== -1) {    
   const tasks = new Listr([      
     {
@@ -211,15 +227,15 @@ if (args.indexOf("stop") !== -1) {
     const tasks = new Listr([      
       {
         title: "Starting development server",
-        task: (ctx, task) => execa(`cd ./lowcodecms/development-main && docker-compose up -d`, [], {shell: true})        
+        task: (ctx, task) => execa(`cd ./lowcodecms/development-main && docker-compose up -d --remove-orphans`, [], {shell: true})        
         .catch((e) => {
           console.log(e)
             task.skip('Could not start developmentserver');
         })
       },
       {
-        title: "Opening Browser on http://localhost/console (superuser / super2020)",
-        task: ()=>open("http://localhost/console")
+        title: "Opening Browser on http://localhost/console/sites (superuser / super2020)",
+        task: ()=>open("http://localhost/console/sites")
       }
     ]);
     tasks.run();
@@ -239,7 +255,20 @@ if (args.indexOf("stop") !== -1) {
         task: ()=>{
           return extract("./lowcodecms.zip", { dir: process.cwd() + "/lowcodecms" })
         }
-      }
+      },
+      {
+        title: "Pepare startup script",
+        task: (ctx, task) => {
+          const dockerComposePath = process.cwd() + "/lowcodecms/development-main/docker-compose.yml";
+          const rand = nanoid(4);
+          const dockerComposeFile = fs.readFileSync(dockerComposePath, "utf8");
+          fs.writeFileSync(dockerComposePath, dockerComposeFile.replace(/\$rand/g, rand), "utf8")
+        }
+      },
+      {
+        title: "Cleanup",
+        task: (ctx, task) => fs.unlinkSync("./lowcodecms.zip")
+      }      
     ]);
     tasks.run();
 
