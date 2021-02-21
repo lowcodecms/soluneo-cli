@@ -21,7 +21,8 @@ You can have multiple installation in own folder.
   - in installation directory
 - ```sol stop```
   - in installation directory
-
+- ```sol update```
+  - in installation directory. updating local development to latest dev version
 - ```sol logs```
   - in installation directory. display last 100 logs
 
