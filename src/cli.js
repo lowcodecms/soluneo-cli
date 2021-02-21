@@ -238,59 +238,56 @@ export function cli(args) {
     return;
   }
 
-// lowcodecms/development-main
-if (args.indexOf("update") !== -1) {
-  const tasks = new Listr([
-    {
-      title: "Download Installation Files",
-      task: () => download(),
-    },
-    {
-      title: "Extract Files",
-      task: () => {
-        return extract("./lowcodecms.zip", {
-          dir: process.cwd() + "/lowcodecms",
-        });
+  // lowcodecms/development-main
+  if (args.indexOf("update") !== -1) {
+    const tasks = new Listr([
+      {
+        title: "Download Installation Files",
+        task: () => download(),
       },
-    },
-    {
-      title: "Update startup script",
-      task: (ctx, task) => prepareScripts(),
-    },
-    {
-      title: "Pull Latest Development Container",
-      task: (ctx, task) =>
-        execa(
-          `cd ./lowcodecms/development-main && docker-compose pull`,
-          [],
-          { shell: true }
-        ).catch((e) => {
-          console.log(e);
-          task.skip("Could not start developmentserver");
-        }),
-    },    
-    {
-      title: "Free up local space",
-      task: (ctx, task) =>
-        execa(
-          `cd ./lowcodecms/development-main && docker-compose image prune -f`,
-          [],
-          { shell: true }
-        ).catch((e) => {
-          console.log(e);
-          task.skip("Could not remove unused containers");
-        }),
-    },    
-    {
-      title: "Cleanup",
-      task: (ctx, task) => fs.unlinkSync("./lowcodecms.zip"),
-    },
-  ]);
-  tasks.run();
+      {
+        title: "Extract Files",
+        task: () => {
+          return extract("./lowcodecms.zip", {
+            dir: process.cwd() + "/lowcodecms",
+          });
+        },
+      },
+      {
+        title: "Update startup script",
+        task: (ctx, task) => prepareScripts(),
+      },
+      {
+        title: "Pull Latest Development Container",
+        task: (ctx, task) =>
+          execa(`cd ./lowcodecms/development-main && docker-compose pull`, [], {
+            shell: true,
+          }).catch((e) => {
+            console.log(e);
+            task.skip("Could not start developmentserver");
+          }),
+      },
+      {
+        title: "Free up local space",
+        task: (ctx, task) =>
+          execa(
+            `cd ./lowcodecms/development-main && docker-compose image prune -f`,
+            [],
+            { shell: true }
+          ).catch((e) => {
+            console.log(e);
+            task.skip("Could not remove unused containers");
+          }),
+      },
+      {
+        title: "Cleanup",
+        task: (ctx, task) => fs.unlinkSync("./lowcodecms.zip"),
+      },
+    ]);
+    tasks.run();
 
-  return;
-}
-
+    return;
+  }
 
   // lowcodecms/development-main
   if (args.indexOf("start") !== -1) {

@@ -1,9 +1,8 @@
 {
   "name": "@lowcodecms/cli",
-  "version": "1.0.0",
+  "version": "1.0.0-beta",
   "main": "src/index.js",
   "bin": {
-    "cli": "bin/sol",
     "sol": "bin/sol"
   },
   "publishConfig": {
