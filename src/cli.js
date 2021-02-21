@@ -273,7 +273,7 @@ if (args.indexOf("update") !== -1) {
       title: "Free up local space",
       task: (ctx, task) =>
         execa(
-          `cd ./lowcodecms/development-main && docker-compose image prune -f`,
+          `cd ./lowcodecms/development-main && docker image prune -f`,
           [],
           { shell: true }
         ).catch((e) => {
