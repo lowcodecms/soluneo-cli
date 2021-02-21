@@ -1,59 +1,91 @@
-# soluneo-cli
+# LowCode CMS CLI (Beta)
 
-soluneo cli
-until this repository is published on npm, clone it and do:
+This is the Soluneo LowCode CMS CommandLine Tool to help with local development and to manage your Server in the Cloud.
 
-- yarn install
-- yarn link
+> LowCode CMS is not Generally Available yet.
 
-note: you need to register at https://my.lowcodecms.com in order to be able to login and download the development build.
-you can install the software at the moment without developer claim. but please still start the process to be ready when it will be more controlled.
+## Getting Started
 
-# local development server
+LowCode CMS CLi requires a local Docker installation (see https://docs.docker.com/get-docker/).
 
-You can have multiple installation in own folder. 
+> You need to register at https://my.lowcodecms.com in order to be able to login and download the development build. Until GA, once you are registered, you have to click the _claim developer access_  button to request access to the developer preview program. 
 
-- ```sol login```
-  - somewhere for global login
+### Installation
+
+```shell
+npm install @lowcodecms/cli -g 
+```
+or with Yarn
+
+```shell
+yarn global add @lowcodecms/cli
+```
+
+### Login
+To be able to get updates and install LowCode CMS Developer build on your machine, you need to perform once a login on your computer.
+
+```shell
+sol login
+```
+
+This will open your Browser to authenticate to my.lowcodecms.com. You can follow the instructions in the Browser window.
+
+
+# Local Development
+
+Each LowCode CMS installation has to be in it's own folder, since the CLI will create a subdirectory _lowcodecms_ in the directory you perform the install command.
+
+Assuming you have executed the ```sol login``` command successfully you nede to perform following steps:
+
 - ```sol install```
-  - in directory you want to isntall the dev server (should be another dierctory then application code)
+  - in directory you want to install the dev server (should be another directory then application code)
 - ```sol start```
   - in installation directory
+
+It might take a while the first time because the CLI is downloading all microservices images. To see progress you can open another terminal window and check status with ```sol logs```.
+
+Right now the local LowCode CMS instance is starting on port 80 - this will be configurable in future.
+
+After succesful installation the CLI will open your Browser at http://localhost/console/
+
+
+# Command Line Overview
+- ```sol install```
+  - in directory you want to install the dev server (should be another directory then application code)
+- ```sol start```
+  - in installation directory to start the LowCode CMS
 - ```sol stop```
-  - in installation directory
+  - in installation directory to stop running instance
 - ```sol update```
-  - in installation directory. updating local development to latest dev version
+  - In installation directory. This is updating the local development to latest LowCode CMS development version
 - ```sol logs```
   - in installation directory. display last 100 logs
 
-right now it is starting on port 80 - will be configurable in future.
+> Note: It is save to perform ```sol install``` and ```sol update``` in existing installation directories. instance data will not be overwritten.
 
-it might take a while the first time because the cli is downloading all server images. to see progress you can open another terminal window and check status with sol logs.
+# Usage
 
-it is save to perform ```sol install``` in existing installation directories. instance data will not be overwritten.
-
-# usage
-
-in directory with application code (first download some app from your instance or try https://github.com/solutas/solutas.ch as an example)
+In directory with application code (first download some app from your instance or try https://github.com/solutas/solutas.ch as an example) run following command to start the watch mode:
 
 ```
 sol --username *** --password **** --server http://localhost
 ```
 
-will start watch mode
 
 
-# notes
+# Notes
 
-install the https://github.com/lowcodecms/system-app it will not be automatically installed
+> If you don't have access to this repository yet get in touch with your point of contact. 
 
-clone the reposistory and start watch mode 
+Install the https://github.com/lowcodecms/system-app in the Development Preview it will not be automatically installed. Once LowCode CMS will be general available, this doesn't have to be done anymore.
+
+Clone the reposistory and start watch mode 
 ```
 sol --username *** --password **** --server http://localhost
 
 ```
-then touch a file to install the package. in future this will be automatically installed.
 
-also in console/settings/tools update "themes" to get the lates bootstrap5 and sass package installed.
+- Then touch a file to install the package. In future this will be automatically installed.
+- in console/settings/tools update "themes" to get the lates bootstrap 5 and sass package installed.
 
-you need to save in sites themes once to rebuild the css files - same has to be done if an app css or client javascript file is changed.
+Once installed trigger Site > Build in Console to update the build to include the new Apps.
