@@ -246,14 +246,6 @@ export function cli(args) {
         task: () => download(),
       },
       {
-        title: "Extract Files",
-        task: () => {
-          return extract("./lowcodecms.zip", {
-            dir: process.cwd() + "/lowcodecms",
-          });
-        },
-      },
-      {
         title: "Update startup script",
         task: (ctx, task) => prepareScripts(),
       },
@@ -271,7 +263,7 @@ export function cli(args) {
         title: "Free up local space",
         task: (ctx, task) =>
           execa(
-            `cd ./lowcodecms/development-main && docker-compose image prune -f`,
+            `cd ./lowcodecms/development-main && docker image prune -f`,
             [],
             { shell: true }
           ).catch((e) => {
@@ -289,132 +281,132 @@ export function cli(args) {
     return;
   }
 
-  // lowcodecms/development-main
-  if (args.indexOf("start") !== -1) {
-    const tasks = new Listr([
-      {
-        title: "Starting development server",
-        task: (ctx, task) =>
-          execa(
-            `cd ./lowcodecms/development-main && docker-compose up -d --remove-orphans`,
-            [],
-            { shell: true }
-          ).catch((e) => {
-            console.log(e);
-            task.skip("Could not start developmentserver");
-          }),
-      },
-      {
-        title:
-          "Opening Browser on http://localhost/console/sites (superuser / super2020)",
-        task: () => open("http://localhost/console/sites"),
-      },
-    ]);
-    tasks.run();
+  return;
+}
 
-    return;
-  }
+// lowcodecms/development-main
+if (args.indexOf("start") !== -1) {
+  const tasks = new Listr([
+    {
+      title: "Starting development server",
+      task: (ctx, task) =>
+        execa(
+          `cd ./lowcodecms/development-main && docker-compose up -d --remove-orphans`,
+          [],
+          { shell: true }
+        ).catch((e) => {
+          console.log(e);
+          task.skip("Could not start developmentserver");
+        }),
+    },
+    {
+      title:
+        "Opening Browser on http://localhost/console/sites (superuser / super2020)",
+      task: () => open("http://localhost/console/sites"),
+    },
+  ]);
+  tasks.run();
 
-  if (args.indexOf("install") !== -1) {
-    const tasks = new Listr([
-      {
-        title: "Download Installation Files",
-        task: () => download(),
+  return;
+}
+
+if (args.indexOf("install") !== -1) {
+  const tasks = new Listr([
+    {
+      title: "Download Installation Files",
+      task: () => download(),
+    },
+    {
+      title: "Extract Files",
+      task: () => {
+        return extract("./lowcodecms.zip", {
+          dir: process.cwd() + "/lowcodecms",
+        });
       },
-      {
-        title: "Extract Files",
-        task: () => {
-          return extract("./lowcodecms.zip", {
-            dir: process.cwd() + "/lowcodecms",
+    },
+    {
+      title: "Pepare startup script",
+      task: (ctx, task) => prepareScripts(),
+    },
+    {
+      title: "Cleanup",
+      task: (ctx, task) => fs.unlinkSync("./lowcodecms.zip"),
+    },
+  ]);
+  tasks.run();
+
+  return;
+}
+if (args.indexOf("login") !== -1) {
+  const tasks = new Listr([
+    {
+      title: "Authenticate to LowCode CMS",
+      task: () => login(),
+    },
+    {
+      title: "Store credentials",
+      task: (ctx, task) => {
+        if (!soltoken) {
+          task.skip("token not valid");
+        }
+      },
+    },
+    {
+      title: "Read Developer Settings",
+      task: async (ctx, task) => {
+        if (!soltoken) {
+          task.skip("token not valid");
+        } else {
+          const url = "https://my.lowcodecms.com/api/settings";
+          const result = await fetch(url, {
+            method: "GET",
+            withCredentials: true,
+            credentials: "include",
+            headers: {
+              Authorization: "Bearer " + soltoken,
+            },
           });
-        },
+          const data = await result.json();
+          ctx.devsettings = { ...data.settings };
+        }
       },
-      {
-        title: "Pepare startup script",
-        task: (ctx, task) => prepareScripts(),
-      },
-      {
-        title: "Cleanup",
-        task: (ctx, task) => fs.unlinkSync("./lowcodecms.zip"),
-      },
-    ]);
-    tasks.run();
+    },
+    {
+      title: "Docker inkstalled?",
+      task: (ctx, task) =>
+        execa("docker").catch(() => {
+          ctx.docker = false;
 
-    return;
-  }
-  if (args.indexOf("login") !== -1) {
-    const tasks = new Listr([
-      {
-        title: "Authenticate to LowCode CMS",
-        task: () => login(),
-      },
-      {
-        title: "Store credentials",
-        task: (ctx, task) => {
-          if (!soltoken) {
-            task.skip("token not valid");
-          }
-        },
-      },
-      {
-        title: "Read Developer Settings",
-        task: async (ctx, task) => {
-          if (!soltoken) {
-            task.skip("token not valid");
-          } else {
-            const url = "https://my.lowcodecms.com/api/settings";
-            const result = await fetch(url, {
-              method: "GET",
-              withCredentials: true,
-              credentials: "include",
-              headers: {
-                Authorization: "Bearer " + soltoken,
-              },
-            });
-            const data = await result.json();
-            ctx.devsettings = { ...data.settings };
-          }
-        },
-      },
-      {
-        title: "Docker inkstalled?",
-        task: (ctx, task) =>
-          execa("docker").catch(() => {
-            ctx.docker = false;
+          task.skip("Docker not available`");
+        }),
+    },
+    {
+      title: "Authenticate to Container Registry",
+      task: (ctx, task) =>
+        execa(
+          `echo ${ctx.devsettings.GithubToken} | docker login ghcr.io -u ${ctx.devsettings.GithubUser} --password-stdin`,
+          [],
+          { shell: true }
+        ).catch((e) => {
+          console.log(e);
+          task.skip("Could not authtenticate to registry`" + JSON.stringify(e));
+        }),
+    },
 
-            task.skip("Docker not available`");
-          }),
-      },
-      {
-        title: "Authenticate to Container Registry",
-        task: (ctx, task) =>
-          execa(
-            `echo ${ctx.devsettings.GithubToken} | docker login ghcr.io -u ${ctx.devsettings.GithubUser} --password-stdin`,
-            [],
-            { shell: true }
-          ).catch((e) => {
-            console.log(e);
-            task.skip(
-              "Could not authtenticate to registry`" + JSON.stringify(e)
-            );
-          }),
-      },
+    {
+      title: "finishing",
+      task: () => setTimeout(() => process.exit(0), 100),
+    },
+  ]);
 
-      {
-        title: "finishing",
-        task: () => setTimeout(() => process.exit(0), 100),
-      },
-    ]);
-
-    tasks.run();
-  } else {
-    let options = parseArgumentsIntoOptions(args);
-    const tasks = new Listr([
-      {
-        title: "Watch files",
-        task: () => watchCode(options),
-      },
-    ]);
-    tasks.run();
-  }
+  tasks.run();
+} else {
+  let options = parseArgumentsIntoOptions(args);
+  const tasks = new Listr([
+    {
+      title: "Watch files",
+      task: () => watchCode(options),
+    },
+  ]);
+  tasks.run();
 }
