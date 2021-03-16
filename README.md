@@ -2,7 +2,8 @@
 
 This is the Soluneo LowCode CMS CommandLine Tool to help with local development and to manage your Server in the Cloud.
 
-![alt text](https://raw.githubusercontent.com/lowcodecms/soluneo-cli/5a886d6fffde76d684fd0b63a41fda8291f2226c/sol-cli.gif?token=AAPTP3TMZCQLTB3V2BXSRU3AKDLEK)
+![alt text](https://github.com/lowcodecms/soluneo-cli/raw/main/sol-cli.gif)
+
 > LowCode CMS is not Generally Available yet. This is a Technology Preview for Early Adapters.
 > Interested to learn more? Visit us on www.lowcodecms.com or register directly on https://my.lowcodecms.com
 
