@@ -1,6 +1,6 @@
 {
   "name": "@lowcodecms/cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "src/cli.js",
   "bin": {
     "sol": "bin/sol"
@@ -43,7 +43,11 @@
   },
   "keywords": [
     "cli",
-    "lowcodecms"
+    "lowcodecms",
+    "lowcode",
+    "cms",
+    "app development",
+    "bootstrap"
   ],
   "license": "Apache-2.0",
   "bugs": {
