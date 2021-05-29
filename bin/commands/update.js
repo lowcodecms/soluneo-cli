@@ -15,7 +15,7 @@
  ******************************************************************************/
 
 const Stream = require("stream");
-const Listr = require("Listr");
+const Listr = require("listr");
 const execa = require("execa");
 const chalk = require("chalk");
 
