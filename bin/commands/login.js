@@ -14,7 +14,7 @@
  * and limitations under the License.
  ******************************************************************************/
 
-const Listr = require("Listr");
+const Listr = require("listr");
 const chalk = require("chalk");
 const fetch = require("node-fetch");
 const execa = require("execa");
