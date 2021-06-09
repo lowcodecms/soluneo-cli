@@ -68,8 +68,6 @@ exports.downloadDefaultTheme = async function download() {
   });
 };
 
-
-
 exports.extract = (file, dir) =>
   extract(file, {
     dir,
@@ -150,8 +148,61 @@ exports.login = (ctx, task) => {
   });
 };
 
+exports.loginCli = (ctx, task, options) => {
+  
+  const app = express();
+  app.use(bodyParser.json());
+  app.use(cors());
+
+  return new Observable(async (observer) => {
+    const tokenLocation = ".lowcodecms/.token";  
+    if (fs.existsSync(tokenLocation)) {
+      
+        const token = fs.readFileSync(tokenLocation, "utf8");
+        ctx.soltoken = token;
+        observer.next(token);
+        observer.complete();
+    } else {
+      const p = new Promise((resolve, reject) => {
+        app.post("/ok", async function (req, res) {
+          if (!req.body.token) {
+            reject(new Error("no token returned"));
+          } else {
+            fs.writeFileSync(tokenLocation, req.body.token, "utf8");
+            resolve(req.body.token);
+          }
+          res.end("");
+        });
+      });
+      observer.next("Connecting OAuth Server");
+      const server = await app.listen(8407);
+      observer.next("Server connected");
+
+      await open(`${options.server}/console/login?cli=${new Date().getTime()}`);
+      observer.next("Login Screen");
+      setTimeout(() => {
+        if (!ctx.token) {
+          server.close();
+          observer.complete();
+        }
+      }, 20000);
+
+      p.then((token) => {
+        observer.next(token);
+        ctx.soltoken = token;
+        server.close();
+        observer.complete();
+      }).catch((e) => {
+        server.close();
+        observer.complete();
+      });
+    }
+  });
+};
+
 exports.createAndUploadPackage = async (options, upload = false) => {
   const spinner = ora("Creating Package").start();
+
   spinner.color = "yellow";
   if (!fs.existsSync("./components") || !fs.existsSync("./package.json")) {
     spinner.fail("No LowCode CMS App found in this directory.\n");
@@ -164,8 +215,7 @@ exports.createAndUploadPackage = async (options, upload = false) => {
       source: ["./components/*", "./package.json"],
       destination,
     });
-    spinner.color = "green";
-    spinner.text = "Package Created";
+    spinner.succeed("Package Created");
 
     const stream = fs.createReadStream(destination);
     const formData = new FormData();
@@ -173,13 +223,10 @@ exports.createAndUploadPackage = async (options, upload = false) => {
       contentType: "application/zip",
       filename: "destination.zip",
     });
-    spinner.text = "Uploading Package";
+    spinner.info("Uploading Package");
     const headers = {
       Authorization:
-        "Basic " +
-        Buffer.from(options.username + ":" + options.password).toString(
-          "base64"
-        ),
+        "Bearer " + options.soltoken        
     };
 
     const result = await fetch(options.server + "/api/apps/install", {
@@ -204,10 +251,11 @@ exports.createAndUploadPackage = async (options, upload = false) => {
       console.log(chalk.green.bold(" Package installed"));
     }
   } catch (e) {
-    
     if (e.code === "ECONNREFUSED") {
       spinner.fail(
-        `Could not install Package. ${chalk.bgRed.underline.white(` Connection to Server ${options.server} failed. `)}\n`
+        `Could not install Package. ${chalk.bgRed.underline.white(
+          ` Connection to Server ${options.server} failed. `
+        )}\n`
       );
       spinner.stop();
     } else {

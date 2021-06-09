@@ -13,11 +13,14 @@
  * See the Apache Version 2.0 License for specific language governing permissions
  * and limitations under the License.
  ******************************************************************************/
-
+const Listr = require("Listr");
+const execa = require("execa");
 const watch = require("node-watch");
 const ora = require("ora");
+const chalk = require("chalk");
 
-const { createAndUploadPackage } = require("../../src/helpers");
+const { createAndUploadPackage, loginCli } = require("../../src/helpers");
+const arg = require("arg");
 
 exports.command = "install [options]";
 exports.desc = "Install local app project on LowCode CMS Server";
@@ -35,7 +38,86 @@ exports.builder = {
 };
 
 exports.handler = async function (argv) {
-  await createAndUploadPackage(argv);
+  
+  const tasks = new Listr([
+    {
+      title: "Authenticate to LowCode CMS",
+      task: (ctx, task) => loginCli(ctx, task, argv),
+    },    
+    {
+      title: "Install Package",
+      enabled: ctx=>ctx.soltoken,
+      task: async (ctx, task) => {
+          await createAndUploadPackage({...argv, ...ctx});
+      },
+    },
+    {
+      title: "Watch",
+      enabled: ctx=>argv.watch,
+      task: async (ctx, task) => {
+        const spinner = ora("Watching for file changes").start();
+    spinner.color = "green";
+    watch(
+      "./",
+      {
+        recursive: true,
+        filter(f, skip) {
+          // skip node_modules
+          if (/\.lowcodecms/.test(f)) return skip;
+          // skip node_modules
+          if (/\/node_modules/.test(f)) return skip;
+          // skip .git folder
+          if (/\.git/.test(f)) return skip;
+          // only watch for js files
+          return (
+            /\.js$/.test(f) ||
+            /\.hbs$/.test(f) ||
+            /\.md$/.test(f) ||
+            /\.scss$/.test(f) ||
+            /package.json$/.test(f) ||
+            /dialog.json$/.test(f)
+          );
+        },
+      },
+      async function (evt, name) {
+        spinner.color = "yellow";
+        spinner.text = `${name} changed.`;
+        await createAndUploadPackage({...argv, ...ctx});
+        spinner.color = "green";
+        spinner.text = "Waiting for changes.";
+      }
+    );
+
+      },
+    },
+  ]);
+  tasks.run().then((ctx)=>{
+    if(!ctx.soltoken) {
+      console.log(
+        chalk.red.bold(
+          ` Not Authenticated. Authentication Token not found.`
+        )
+      );
+      process.exit(0);
+    } else {
+      console.log(
+        chalk.green.bold(
+          `Installation on ${argv.server} finshed.`
+        )
+      );
+      if(!argv.watch) {
+        process.exit(0);
+      }
+    }
+    
+    
+  })
+};
+
+
+
+/*
+ await createAndUploadPackage(argv);
   if (argv.watch) {
     const spinner = ora("Watching for file changes").start();
     spinner.color = "green";
@@ -70,4 +152,5 @@ exports.handler = async function (argv) {
       }
     );
   }
-};
+
+*/
